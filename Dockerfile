@@ -24,5 +24,6 @@ COPY . .
 # 7. Expose the port FastAPI runs on
 EXPOSE 8000
 
-# 8. Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 8. Run migrations FIRST to build the database tables, then start the application
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
