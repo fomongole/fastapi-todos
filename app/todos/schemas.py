@@ -31,7 +31,6 @@ class SubTaskResponse(SubTaskBase):
     model_config = ConfigDict(from_attributes=True)
 
 # --- TODO SCHEMAS ---
-# Shared properties
 class TodoBase(BaseModel):
     title: str
     description: Optional[str] = None
@@ -50,6 +49,7 @@ class TodoUpdate(BaseModel):
     priority: Optional[int] = Field(default=None, ge=1, le=3)
     due_date: Optional[datetime] = None
     category_id: Optional[int] = None
+    sub_tasks: Optional[List[SubTaskCreate]] = None
 
 class TodoResponse(TodoBase):
     id: int
@@ -59,7 +59,6 @@ class TodoResponse(TodoBase):
     category: Optional[CategoryResponse] = None
     sub_tasks: List[SubTaskResponse] = []
 
-    # This tells Pydantic to read data even if it's an SQLAlchemy Model
     model_config = ConfigDict(from_attributes=True)
 
 class PaginatedTodoResponse(BaseModel):

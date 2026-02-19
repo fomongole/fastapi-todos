@@ -115,8 +115,23 @@ def create_todo(db: Session, todo: schemas.TodoCreate, owner_id: int):
 
 def update_todo(db: Session, db_todo: models.Todo, todo_update: schemas.TodoUpdate):
     update_data = todo_update.model_dump(exclude_unset=True)
+    
+    # Extract sub_tasks so SQLAlchemy doesn't try to use setattr() on them
+    sub_tasks_data = update_data.pop("sub_tasks", None)
+    
     for key, value in update_data.items():
         setattr(db_todo, key, value) 
+        
+    # If the user passed sub_tasks in the update, replace the old ones
+    if sub_tasks_data is not None:
+        # 1. Clear existing sub-tasks
+        db.query(models.SubTask).filter(models.SubTask.todo_id == db_todo.id).delete()
+        
+        # 2. Insert the new ones
+        for st_data in sub_tasks_data:
+            db_subtask = models.SubTask(**st_data, todo_id=db_todo.id)
+            db.add(db_subtask)
+
     db.commit()
     db.refresh(db_todo)
     return db_todo

@@ -49,10 +49,18 @@ def get_todo(db: Session, todo_id: int, owner_id: int):
     return todo
 
 def create_todo(db: Session, todo: schemas.TodoCreate, owner_id: int):
+    
+    if todo.category_id is not None:
+        get_category(db=db, category_id=todo.category_id, owner_id=owner_id)
+        
     return repository.create_todo(db=db, todo=todo, owner_id=owner_id)
 
 def update_todo(db: Session, todo_id: int, todo_update: schemas.TodoUpdate, owner_id: int):
     db_todo = get_todo(db=db, todo_id=todo_id, owner_id=owner_id) 
+    
+    if todo_update.category_id is not None:
+        get_category(db=db, category_id=todo_update.category_id, owner_id=owner_id)
+        
     return repository.update_todo(db=db, db_todo=db_todo, todo_update=todo_update)
 
 def delete_todo(db: Session, todo_id: int, owner_id: int):
