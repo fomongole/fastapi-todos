@@ -2,6 +2,7 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from loguru import logger
 
 # 1. Pydantic Validation Handler: Triggered when schemas don't match input
@@ -41,4 +42,14 @@ async def global_exception_handler(request: Request, exc: Exception):
             "error": "Internal Server Error", 
             "message": "An unexpected error occurred. We have been notified."
         }
+    )
+
+# 4. Standard HTTP Errors: Overrides default FastAPI "detail" to use "message"
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": "Client Error",
+            "message": exc.detail
+        },
     )
