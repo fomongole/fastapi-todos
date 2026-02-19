@@ -42,7 +42,6 @@ async def lifespan(app: FastAPI):
         FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
         app.state.redis = None
     else:
-        # FastAPICache strictly requires raw bytes from Redis to function properly!
         redis = aioredis.from_url(settings.REDIS_URL)
         
         # Verify connection on startup

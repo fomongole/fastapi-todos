@@ -1,4 +1,4 @@
-# FastAPI Todo API 🚀
+# FastAPI Todos 🚀
 
 A professional, high-performance, and secure Todo application backend built with **FastAPI**, **PostgreSQL**, and **Docker**. This project follows **Clean Architecture** principles, separating concerns into Routers, Services, and Repositories.
 
