@@ -10,5 +10,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     
+    # The device token for push notifications
+    fcm_token = Column(String, nullable=True)
+    
     todos = relationship("Todo", back_populates="owner")
     categories = relationship("Category", back_populates="owner")

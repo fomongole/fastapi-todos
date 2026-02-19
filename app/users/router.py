@@ -77,3 +77,12 @@ async def logout(
     )
 
     return {"message": "Successfully logged out!"}
+
+@router.patch("/device-token", status_code=status.HTTP_200_OK)
+def update_device_token(
+    token_data: schemas.DeviceTokenUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    service.update_device_token(db=db, user=current_user, fcm_token=token_data.fcm_token)
+    return {"message": "Device token updated successfully"}

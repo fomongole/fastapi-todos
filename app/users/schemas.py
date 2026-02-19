@@ -20,9 +20,9 @@ class Token(BaseModel):
 
 class TokenRefresh(BaseModel):
     refresh_token: str
-    
-class TokenRefresh(BaseModel):
-    refresh_token: str
 
 class LogoutRequest(BaseModel):
     refresh_token: str
+
+class DeviceTokenUpdate(BaseModel):
+    fcm_token: str

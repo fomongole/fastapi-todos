@@ -15,3 +15,9 @@ def create_user(db: Session, user: schemas.UserCreate, hashed_password: str) -> 
     db.refresh(db_user)
     
     return db_user
+
+def update_fcm_token(db: Session, db_user: models.User, fcm_token: str) -> models.User:
+    db_user.fcm_token = fcm_token
+    db.commit()
+    db.refresh(db_user)
+    return db_user

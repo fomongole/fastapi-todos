@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 import jwt
 from datetime import datetime, timezone
 
-from app.users import repository, schemas
+from app.users import repository, schemas, models
 from app.core import security
 from app.core.config import settings
 
@@ -94,3 +94,6 @@ async def denylist_tokens(access_token: str, refresh_token: str, redis_client):
                     
         except jwt.InvalidTokenError:
             pass # Malformed tokens can be safely ignored
+
+def update_device_token(db: Session, user: models.User, fcm_token: str):
+    return repository.update_fcm_token(db=db, db_user=user, fcm_token=fcm_token)

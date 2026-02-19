@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import asyncio
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -27,6 +28,8 @@ from app.core.exceptions import (
     http_exception_handler,
 )
 
+from app.core.worker import process_reminders
+
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 
@@ -53,6 +56,10 @@ async def lifespan(app: FastAPI):
         # Attach raw redis to app state for denylist operations
         app.state.redis = redis
         FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+        
+        # Start the background reminder worker (Skipped during Pytest)
+        asyncio.create_task(process_reminders())
+        logger.info("Background Notification Worker Started.")
 
     yield
 

@@ -43,3 +43,7 @@ class Todo(Base):
     category = relationship("Category", back_populates="todos")
     
     sub_tasks = relationship("SubTask", back_populates="todo", cascade="all, delete-orphan")
+
+    # For tracking background notifications
+    reminder_time = Column(DateTime(timezone=True), nullable=True)
+    notification_sent = Column(Boolean, default=False)

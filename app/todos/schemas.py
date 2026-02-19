@@ -38,6 +38,7 @@ class TodoBase(BaseModel):
     priority: int = Field(default=3, ge=1, le=3, description="1=High, 2=Medium, 3=Low")
     due_date: Optional[datetime] = None
     category_id: Optional[int] = None
+    reminder_time: Optional[datetime] = None
 
 class TodoCreate(TodoBase):
     sub_tasks: Optional[List[SubTaskCreate]] = []
@@ -49,12 +50,15 @@ class TodoUpdate(BaseModel):
     priority: Optional[int] = Field(default=None, ge=1, le=3)
     due_date: Optional[datetime] = None
     category_id: Optional[int] = None
+    reminder_time: Optional[datetime] = None
     sub_tasks: Optional[List[SubTaskCreate]] = None
 
 class TodoResponse(TodoBase):
     id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
+    
+    notification_sent: bool
     
     category: Optional[CategoryResponse] = None
     sub_tasks: List[SubTaskResponse] = []
