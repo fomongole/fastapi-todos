@@ -39,16 +39,14 @@ async def lifespan(app: FastAPI):
         FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
         app.state.redis = None
     else:
-        redis = aioredis.from_url(
-            settings.REDIS_URL,
-            encoding="utf8",
-            decode_responses=True,
-        )
+        # FastAPICache strictly requires raw bytes from Redis to function properly!
+        redis = aioredis.from_url(settings.REDIS_URL)
+        
         # Verify connection on startup
         try:
             logger.info("Connecting to Redis/Upstash...")
             await redis.ping()
-            logger.info("Successfully connected to Redis/Upstash!")
+            logger.info("Successfully connected to Redis!")
         except Exception as e:
             logger.error(f"Failed to connect to Redis at {settings.REDIS_URL}: {e}")
 
