@@ -48,19 +48,7 @@ This project showcases **Clean Architecture**, **Distributed Caching**, and **Re
 
 ---
 
-## 🚀 Getting Started
-
-### 📋 Prerequisites
-
-- Docker & Docker Compose  
-- Firebase Service Account Key  
-  (Place as `serviceAccountKey.json` in project root)
-
----
-
 ## ⚙️ Environment Configuration
-
-Update your `.env` file with the following:
 
 ```env
 PROJECT_NAME="Fred-Todos-Pro"
@@ -71,18 +59,6 @@ ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 FCM_SERVICE_ACCOUNT_PATH="./serviceAccountKey.json"
-```
-
----
-
-## 🐳 Installation
-
-```bash
-# Build and bring up App, Postgres, and Redis
-docker-compose up --build -d
-
-# Run migrations to build the new Category and Sub-task tables
-docker-compose exec api alembic upgrade head
 ```
 
 ---
@@ -115,15 +91,6 @@ fastapi-todos/
 
 ---
 
-## 🧪 Testing the New Architecture
-
-```bash
-# Run the test suite inside the running api container
-docker-compose exec api pytest -q
-```
-
----
-
 ## 📖 API Documentation
 
 Access the upgraded v1 documentation locally:
@@ -136,11 +103,6 @@ Access the upgraded v1 documentation locally:
 ## 🏗️ Architecture Diagram
 
 Below are two formats — a Mermaid diagram (works where Mermaid is supported) and an ASCII fallback.
-
-### Mermaid (compatible, avoids problematic tokens)
-
-**Why this version?**  
-Some GitHub/mermaid parser versions choke on certain characters inside unquoted square-bracket node labels or on inline arrow labels. The version below uses quoted labels inside node brackets and avoids inline arrow labels — this is the most portable and reliable form.
 
 ```mermaid
 flowchart LR
@@ -176,49 +138,3 @@ flowchart LR
                                            |
                                          FCM (push)
 ```
-
----
-
-## ⚙️ Cache & Denylist Notes
-
-- The API uses `fastapi-cache` with the Redis backend. **Do not** set `decode_responses=True` when using binary cache payloads — use raw bytes.
-- In production, **never** allow cache errors to surface to clients. Use fail-safe cache reads/writes with try/except and fall back to DB on errors.
-
----
-
-## 🧾 Category Deletion Policy
-
-Recommended: mark `ON DELETE SET NULL` for the `categories.id` FK so deleting a category preserves todos (they become uncategorized). This is preferred UX for productivity apps.
-
-```sql
-ALTER TABLE todos
-  DROP CONSTRAINT IF EXISTS todos_category_id_fkey,
-  ADD CONSTRAINT todos_category_id_fkey
-  FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL;
-```
-
----
-
-## ✅ Pydantic Best Practices
-
-Avoid mutable defaults:
-
-```py
-from pydantic import BaseModel, Field
-
-sub_tasks: List[SubTaskCreate] = Field(default_factory=list)
-```
-
----
-
-## 🔐 Security Notes
-
-- Use a strong `SECRET_KEY` and rotate it as needed.
-- Use HTTPS in production and restrict CORS origins.
-- Use Redis denylist for refresh tokens so logged-out tokens cannot be reused.
-
----
-
-## License
-
-MIT — see [LICENSE](LICENSE) for details.
