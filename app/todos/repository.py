@@ -1,7 +1,34 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import or_ 
 from app.todos import models, schemas
 
+# --- CATEGORY ---
+def get_categories(db: Session, owner_id: int):
+    return db.query(models.Category).filter(models.Category.owner_id == owner_id).all()
+
+def get_category_by_id(db: Session, category_id: int, owner_id: int):
+    return db.query(models.Category).filter(models.Category.id == category_id, models.Category.owner_id == owner_id).first()
+
+def create_category(db: Session, category: schemas.CategoryCreate, owner_id: int):
+    db_category = models.Category(**category.model_dump(), owner_id=owner_id)
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+def update_category(db: Session, db_category: models.Category, category_update: schemas.CategoryUpdate):
+    update_data = category_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_category, key, value)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+def delete_category(db: Session, db_category: models.Category):
+    db.delete(db_category)
+    db.commit()
+
+# --- TODOS ---
 def get_todos(
     db: Session, 
     owner_id: int, 
@@ -13,6 +40,12 @@ def get_todos(
 ):
     # The base query (always filter by owner)
     query = db.query(models.Todo).filter(models.Todo.owner_id == owner_id)
+    
+    # OPTIMIZATION: To prevent N+1 queries
+    query = query.options(
+        joinedload(models.Todo.category), 
+        selectinload(models.Todo.sub_tasks)
+    )
     
     # Apply filters if provided
     if completed is not None:
@@ -53,14 +86,29 @@ def get_todos_count(
     return query.count()
 
 def get_todo_by_id(db: Session, todo_id: int, owner_id: int):
-    return db.query(models.Todo).filter(
+    return db.query(models.Todo).options(
+        joinedload(models.Todo.category), 
+        selectinload(models.Todo.sub_tasks)
+    ).filter(
         models.Todo.id == todo_id, 
         models.Todo.owner_id == owner_id
     ).first()
 
 def create_todo(db: Session, todo: schemas.TodoCreate, owner_id: int):
-    db_todo = models.Todo(**todo.model_dump(), owner_id=owner_id)
+    # Extract sub-tasks out before creating the Todo
+    todo_data = todo.model_dump()
+    sub_tasks_data = todo_data.pop("sub_tasks", [])
+    
+    db_todo = models.Todo(**todo_data, owner_id=owner_id)
     db.add(db_todo)       
+    db.flush() # Flushes to database to get an ID without finalizing the transaction  
+    
+    # Insert nested sub-tasks
+    if sub_tasks_data:
+        for st_data in sub_tasks_data:
+            db_subtask = models.SubTask(**st_data, todo_id=db_todo.id)
+            db.add(db_subtask)
+            
     db.commit()           
     db.refresh(db_todo)   
     return db_todo

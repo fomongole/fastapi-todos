@@ -11,3 +11,4 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     
     todos = relationship("Todo", back_populates="owner")
+    categories = relationship("Category", back_populates="owner")

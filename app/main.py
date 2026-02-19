@@ -91,8 +91,8 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(Exception, global_exception_handler)
 
 # --- Routers ---
-app.include_router(todos_router)
-app.include_router(users_router)
+app.include_router(todos_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Health"])

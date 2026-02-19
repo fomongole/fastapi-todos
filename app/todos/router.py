@@ -17,6 +17,51 @@ router = APIRouter(
     tags=["Todos"]
 )
 
+# --- CATEGORY ENDPOINTS ---
+@router.post("/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED, tags=["Categories"])
+async def create_category(
+    category: schemas.CategoryCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return service.create_category(db=db, category=category, owner_id=current_user.id)
+
+@router.get("/categories", response_model=List[schemas.CategoryResponse], tags=["Categories"])
+def get_categories(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return service.get_categories(db=db, owner_id=current_user.id)
+
+@router.get("/categories/{category_id}", response_model=schemas.CategoryResponse, tags=["Categories"])
+def get_category(
+    category_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return service.get_category(db=db, category_id=category_id, owner_id=current_user.id)
+
+@router.patch("/categories/{category_id}", response_model=schemas.CategoryResponse, tags=["Categories"])
+async def update_category(
+    category_id: int,
+    category_update: schemas.CategoryUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Clear the todos cache because a category color/name update affects cached Todo data!
+    await FastAPICache.clear(namespace="todos")
+    return service.update_category(db=db, category_id=category_id, category_update=category_update, owner_id=current_user.id)
+
+@router.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Categories"])
+async def delete_category(
+    category_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    await FastAPICache.clear(namespace="todos")
+    service.delete_category(db=db, category_id=category_id, owner_id=current_user.id)
+
+# --- TODO ENDPOINTS ---
 @router.post("/", response_model=schemas.TodoResponse, status_code=status.HTTP_201_CREATED)
 async def create_todo(
     todo: schemas.TodoCreate, 

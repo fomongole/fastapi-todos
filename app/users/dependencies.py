@@ -8,7 +8,7 @@ from app.database.session import get_db
 from app.users import repository, models
 
 # This tells FastAPI where the login endpoint is, so it knows how to configure the Swagger UI!
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/users/login")
 
 async def get_current_user(
     request: Request,

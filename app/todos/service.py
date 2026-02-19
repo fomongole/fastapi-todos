@@ -2,6 +2,27 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.todos import repository, schemas
 
+def get_categories(db: Session, owner_id: int):
+    return repository.get_categories(db=db, owner_id=owner_id)
+
+def get_category(db: Session, category_id: int, owner_id: int):
+    category = repository.get_category_by_id(db=db, category_id=category_id, owner_id=owner_id)
+    if not category:
+        raise HTTPException(status_code=404, detail=f"Category with ID {category_id} not found")
+    return category
+
+def create_category(db: Session, category: schemas.CategoryCreate, owner_id: int):
+    return repository.create_category(db=db, category=category, owner_id=owner_id)
+
+def update_category(db: Session, category_id: int, category_update: schemas.CategoryUpdate, owner_id: int):
+    db_category = get_category(db=db, category_id=category_id, owner_id=owner_id)
+    return repository.update_category(db=db, db_category=db_category, category_update=category_update)
+
+def delete_category(db: Session, category_id: int, owner_id: int):
+    db_category = get_category(db=db, category_id=category_id, owner_id=owner_id)
+    repository.delete_category(db=db, db_category=db_category)
+    return db_category
+
 def get_todos(
     db: Session, 
     owner_id: int, 

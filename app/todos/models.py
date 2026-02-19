@@ -3,6 +3,27 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database.session import Base
 
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    color = Column(String, default="#000000")
+    
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="categories")
+    todos = relationship("Todo", back_populates="category")
+
+class SubTask(Base):
+    __tablename__ = "sub_tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    is_completed = Column(Boolean, default=False)
+    
+    todo_id = Column(Integer, ForeignKey("todos.id", ondelete="CASCADE"))
+    todo = relationship("Todo", back_populates="sub_tasks")
+
 class Todo(Base):
     __tablename__ = "todos"
 
@@ -17,3 +38,8 @@ class Todo(Base):
     
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="todos")
+    
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    category = relationship("Category", back_populates="todos")
+    
+    sub_tasks = relationship("SubTask", back_populates="todo", cascade="all, delete-orphan")
