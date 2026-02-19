@@ -12,7 +12,7 @@ This project showcases **Clean Architecture**, **Distributed Caching**, and **Re
 
 ---
 
-## ✨ New & Advanced Features
+## ✨ Features
 
 - 📶 **API Versioning**  
   Standardized `/api/v1/` prefix for future-proof mobile client support.
@@ -37,7 +37,7 @@ This project showcases **Clean Architecture**, **Distributed Caching**, and **Re
 
 ---
 
-## 🛠️ Updated Tech Stack
+## 🛠️ Tech Stack
 
 - **Framework:** FastAPI  
 - **Cache & Denylist:** Redis  
@@ -137,17 +137,21 @@ Access the upgraded v1 documentation locally:
 
 Below are two formats — a Mermaid diagram (works where Mermaid is supported) and an ASCII fallback.
 
-### Mermaid (recommended view on GitHub with Mermaid enabled)
+### Mermaid (compatible, avoids problematic tokens)
+
+**Why this version?**  
+Some GitHub/mermaid parser versions choke on certain characters inside unquoted square-bracket node labels or on inline arrow labels. The version below uses quoted labels inside node brackets and avoids inline arrow labels — this is the most portable and reliable form.
 
 ```mermaid
 flowchart LR
-  Client[Client (Web / Mobile)] -->|HTTPS| API[FastAPI (/api/v1)]
+  Client["Client (Web / Mobile)"] --> API["FastAPI (/api/v1)"]
   API --> DB[(PostgreSQL)]
   API --> Redis[(Redis Cache & Denylist)]
-  API --> FCM[Firebase Cloud Messaging]
-  API --> Worker[Background Worker (async)]
+  API --> FCM["Firebase Cloud Messaging"]
+  API --> Worker["Background Worker (async)"]
   Worker --> DB
   Worker --> FCM
+
   subgraph Storage
     DB
     Redis
@@ -157,20 +161,20 @@ flowchart LR
 ### ASCII Fallback
 
 ```
-  +------------------+         +-------------+       +-----------+
-  | Client (Web/Mobile) | ---> | FastAPI API | --->  | PostgreSQL |
-  +------------------+         +------^------+       +-----------+
-                                      |
-                            +---------+----------+
-                            | Redis (cache/denylist) |
-                            +-----------------------+
-                                      |
-                                +-----v------+
-                                |  Worker    |
-                                | (background)|
-                                +-----+------+
-                                      |
-                                    FCM (push)
+  +------------------------+         +-------------+       +-----------+
+  | Client (Web/Mobile)    |  --->   | FastAPI API |  ---> | PostgreSQL|
+  +------------------------+         +------^------+       +-----------+
+                                           |
+                                 +---------+----------+
+                                 | Redis (cache/denylist) |
+                                 +-----------------------+
+                                           |
+                                     +-----v------+
+                                     |  Worker    |
+                                     | (background)|
+                                     +-----+------+
+                                           |
+                                         FCM (push)
 ```
 
 ---
