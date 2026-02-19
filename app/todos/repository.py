@@ -1,8 +1,38 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import or_ 
 from app.todos import models, schemas
 
-def get_todos(db: Session, owner_id: int, skip: int = 0, limit: int = 100):
-    return db.query(models.Todo).filter(models.Todo.owner_id == owner_id).offset(skip).limit(limit).all()
+def get_todos(
+    db: Session, 
+    owner_id: int, 
+    skip: int = 0, 
+    limit: int = 100,
+    completed: bool | None = None,
+    priority: int | None = None,
+    search: str | None = None
+):
+    # The base query (always filter by owner)
+    query = db.query(models.Todo).filter(models.Todo.owner_id == owner_id)
+    
+    # Aapply filters if provided
+    if completed is not None:
+        query = query.filter(models.Todo.completed == completed)
+        
+    if priority is not None:
+        query = query.filter(models.Todo.priority == priority)
+        
+    # Apply the search query (case-insensitive)
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                models.Todo.title.ilike(search_term),
+                models.Todo.description.ilike(search_term)
+            )
+        )
+        
+    # Apply pagination and execute
+    return query.offset(skip).limit(limit).all()
 
 def get_todo_by_id(db: Session, todo_id: int, owner_id: int):
     return db.query(models.Todo).filter(
@@ -12,19 +42,15 @@ def get_todo_by_id(db: Session, todo_id: int, owner_id: int):
 
 def create_todo(db: Session, todo: schemas.TodoCreate, owner_id: int):
     db_todo = models.Todo(**todo.model_dump(), owner_id=owner_id)
-    
     db.add(db_todo)       
     db.commit()           
     db.refresh(db_todo)   
-    
     return db_todo
 
 def update_todo(db: Session, db_todo: models.Todo, todo_update: schemas.TodoUpdate):
     update_data = todo_update.model_dump(exclude_unset=True)
-    
     for key, value in update_data.items():
         setattr(db_todo, key, value) 
-        
     db.commit()
     db.refresh(db_todo)
     return db_todo

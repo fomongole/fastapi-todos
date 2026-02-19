@@ -2,8 +2,24 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.todos import repository, schemas
 
-def get_todos(db: Session, owner_id: int, skip: int = 0, limit: int = 100):
-    return repository.get_todos(db=db, owner_id=owner_id, skip=skip, limit=limit)
+def get_todos(
+    db: Session, 
+    owner_id: int, 
+    skip: int = 0, 
+    limit: int = 100,
+    completed: bool | None = None,
+    priority: int | None = None,
+    search: str | None = None
+):
+    return repository.get_todos(
+        db=db, 
+        owner_id=owner_id, 
+        skip=skip, 
+        limit=limit,
+        completed=completed,
+        priority=priority,
+        search=search
+    )
 
 def get_todo(db: Session, todo_id: int, owner_id: int):
     todo = repository.get_todo_by_id(db=db, todo_id=todo_id, owner_id=owner_id)
