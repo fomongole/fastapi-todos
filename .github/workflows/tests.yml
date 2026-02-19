@@ -46,7 +46,7 @@ jobs:
         echo "PROJECT_NAME=Fred-Todos-CI" > .env
         echo "PROJECT_VERSION=1.0.0" >> .env
         echo "DATABASE_URL=postgresql://postgres:supersecretpassword@localhost:5432/todos_db" >> .env
-        echo "SECRET_KEY=ci-test-key" >> .env
+        echo "SECRET_KEY=this-is-a-super-long-ci-test-key-for-jwt" >> .env
         echo "ALGORITHM=HS256" >> .env
         echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
 

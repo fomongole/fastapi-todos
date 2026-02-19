@@ -2,7 +2,10 @@ def test_read_todos_unauthorized(client):
     response = client.get("/todos/")
     
     assert response.status_code == 401
-    assert response.json() == {"detail": "Not authenticated"}
+    assert response.json() == {
+        "error": "Client Error", 
+        "message": "Not authenticated"
+    }
 
 def test_register_and_login(client):
     user_data = {"email": "testuser@example.com", "password": "securepassword"}
@@ -15,7 +18,6 @@ def test_register_and_login(client):
     
     token = login_res.json()["access_token"]
     assert token is not None
-    return token
 
 def test_create_todo_authenticated(client):
     # Create a user and get a token
@@ -26,7 +28,6 @@ def test_create_todo_authenticated(client):
     token = login_res.json()["access_token"]
 
     # Create a Todo using the Bearer Token
-    # passed the token in the 'headers' argument
     headers = {"Authorization": f"Bearer {token}"}
     todo_payload = {
         "title": "Build an Enterprise API",
