@@ -48,8 +48,12 @@ async def read_todos(
         search=search
     )
     
+    # We parse the raw SQLAlchemy models into safe Pydantic models 
+    # BEFORE they hit the cache decorator to prevent DetachedInstance errors.
+    parsed_items = [schemas.TodoResponse.model_validate(item) for item in items]
+    
     return {
-        "items": items,
+        "items": parsed_items,
         "total": total,
         "page": page,
         "size": size,
