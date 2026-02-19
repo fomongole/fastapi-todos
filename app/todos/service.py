@@ -11,15 +11,15 @@ def get_todos(
     priority: int | None = None,
     search: str | None = None
 ):
-    return repository.get_todos(
-        db=db, 
-        owner_id=owner_id, 
-        skip=skip, 
-        limit=limit,
-        completed=completed,
-        priority=priority,
-        search=search
+    items = repository.get_todos(
+        db=db, owner_id=owner_id, skip=skip, limit=limit,
+        completed=completed, priority=priority, search=search
     )
+    total = repository.get_todos_count(
+        db=db, owner_id=owner_id, 
+        completed=completed, priority=priority, search=search
+    )
+    return items, total
 
 def get_todo(db: Session, todo_id: int, owner_id: int):
     todo = repository.get_todo_by_id(db=db, todo_id=todo_id, owner_id=owner_id)

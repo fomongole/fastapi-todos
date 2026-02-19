@@ -4,7 +4,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str
     PROJECT_VERSION: str
     DATABASE_URL: str
-    DEBUG_MODE: bool = False # Default value if it's missing from .env
+    REDIS_URL: str = "redis://redis:6379/0"
+    DEBUG_MODE: bool = False
+    TESTING: bool = False
     
     SECRET_KEY: str
     ALGORITHM: str = "HS256"

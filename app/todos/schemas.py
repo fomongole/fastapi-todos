@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 # Shared properties
@@ -26,4 +26,12 @@ class TodoResponse(TodoBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
+    # This tells Pydantic to happily read data even if it's an SQLAlchemy Model
     model_config = ConfigDict(from_attributes=True)
+
+class PaginatedTodoResponse(BaseModel):
+    items: List[TodoResponse]
+    total: int
+    page: int
+    size: int
+    pages: int

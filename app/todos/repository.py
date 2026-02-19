@@ -34,6 +34,23 @@ def get_todos(
     # Apply pagination and execute
     return query.offset(skip).limit(limit).all()
 
+def get_todos_count(
+    db: Session, 
+    owner_id: int, 
+    completed: bool | None = None,
+    priority: int | None = None,
+    search: str | None = None
+):
+    query = db.query(models.Todo).filter(models.Todo.owner_id == owner_id)
+    if completed is not None:
+        query = query.filter(models.Todo.completed == completed)
+    if priority is not None:
+        query = query.filter(models.Todo.priority == priority)
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(or_(models.Todo.title.ilike(search_term), models.Todo.description.ilike(search_term)))
+    return query.count()
+
 def get_todo_by_id(db: Session, todo_id: int, owner_id: int):
     return db.query(models.Todo).filter(
         models.Todo.id == todo_id, 
