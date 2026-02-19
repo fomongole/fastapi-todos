@@ -28,8 +28,8 @@ async def create_todo(
 @router.get("/", response_model=schemas.PaginatedTodoResponse)
 @cache(expire=60, namespace="todos") # Cache for 1 minute
 async def read_todos(
-    skip: int = 0, 
-    limit: int = 10,
+    page: int = 1, 
+    size: int = 10,
     completed: Optional[bool] = None,
     priority: Optional[int] = None,
     search: Optional[str] = None,
@@ -39,8 +39,8 @@ async def read_todos(
     items, total = service.get_todos(
         db=db, 
         owner_id=current_user.id, 
-        skip=skip, 
-        limit=limit,
+        page=page, 
+        size=size,
         completed=completed,
         priority=priority,
         search=search
@@ -49,9 +49,9 @@ async def read_todos(
     return {
         "items": items,
         "total": total,
-        "page": (skip // limit) + 1,
-        "size": limit,
-        "pages": (total + limit - 1) // limit if total > 0 else 0
+        "page": page,
+        "size": size,
+        "pages": (total + size - 1) // size if total > 0 else 0
     }
 
 @router.get("/{todo_id}", response_model=schemas.TodoResponse)

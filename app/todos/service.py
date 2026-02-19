@@ -5,14 +5,14 @@ from app.todos import repository, schemas
 def get_todos(
     db: Session, 
     owner_id: int, 
-    skip: int = 0, 
-    limit: int = 100,
+    page: int = 1, 
+    size: int = 10,
     completed: bool | None = None,
     priority: int | None = None,
     search: str | None = None
 ):
     items = repository.get_todos(
-        db=db, owner_id=owner_id, skip=skip, limit=limit,
+        db=db, owner_id=owner_id, page=page, size=size,
         completed=completed, priority=priority, search=search
     )
     total = repository.get_todos_count(

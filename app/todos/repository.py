@@ -5,8 +5,8 @@ from app.todos import models, schemas
 def get_todos(
     db: Session, 
     owner_id: int, 
-    skip: int = 0, 
-    limit: int = 100,
+    page: int = 1, 
+    size: int = 10,
     completed: bool | None = None,
     priority: int | None = None,
     search: str | None = None
@@ -14,7 +14,7 @@ def get_todos(
     # The base query (always filter by owner)
     query = db.query(models.Todo).filter(models.Todo.owner_id == owner_id)
     
-    # Aapply filters if provided
+    # Apply filters if provided
     if completed is not None:
         query = query.filter(models.Todo.completed == completed)
         
@@ -31,8 +31,9 @@ def get_todos(
             )
         )
         
-    # Apply pagination and execute
-    return query.offset(skip).limit(limit).all()
+    # Calculate offset based on page and apply pagination
+    skip = (page - 1) * size
+    return query.offset(skip).limit(size).all()
 
 def get_todos_count(
     db: Session, 
