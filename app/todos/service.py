@@ -14,13 +14,11 @@ def get_todo(db: Session, todo_id: int, owner_id: int):
 def create_todo(db: Session, todo: schemas.TodoCreate, owner_id: int):
     return repository.create_todo(db=db, todo=todo, owner_id=owner_id)
 
-def update_todo(db: Session, todo_id: int, todo_update: schemas.TodoCreate, owner_id: int):
-    # This guarantees the user actually owns the Todo before updating!
+def update_todo(db: Session, todo_id: int, todo_update: schemas.TodoUpdate, owner_id: int):
     db_todo = get_todo(db=db, todo_id=todo_id, owner_id=owner_id) 
     return repository.update_todo(db=db, db_todo=db_todo, todo_update=todo_update)
 
 def delete_todo(db: Session, todo_id: int, owner_id: int):
-    # Guarantees the user owns it before deleting!
     db_todo = get_todo(db=db, todo_id=todo_id, owner_id=owner_id)
     repository.delete_todo(db=db, db_todo=db_todo)
     return db_todo

@@ -11,7 +11,6 @@ def get_todo_by_id(db: Session, todo_id: int, owner_id: int):
     ).first()
 
 def create_todo(db: Session, todo: schemas.TodoCreate, owner_id: int):
-    # Explicitly add the owner_id
     db_todo = models.Todo(**todo.model_dump(), owner_id=owner_id)
     
     db.add(db_todo)       
@@ -20,7 +19,7 @@ def create_todo(db: Session, todo: schemas.TodoCreate, owner_id: int):
     
     return db_todo
 
-def update_todo(db: Session, db_todo: models.Todo, todo_update: schemas.TodoCreate):
+def update_todo(db: Session, db_todo: models.Todo, todo_update: schemas.TodoUpdate):
     update_data = todo_update.model_dump(exclude_unset=True)
     
     for key, value in update_data.items():

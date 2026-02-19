@@ -38,10 +38,10 @@ def read_todo(
 ):
     return service.get_todo(db=db, todo_id=todo_id, owner_id=current_user.id)
 
-@router.put("/{todo_id}", response_model=schemas.TodoResponse)
+@router.patch("/{todo_id}", response_model=schemas.TodoResponse)
 def update_todo(
     todo_id: int, 
-    todo_update: schemas.TodoCreate, 
+    todo_update: schemas.TodoUpdate, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
