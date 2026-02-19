@@ -14,7 +14,8 @@ from app.core.exceptions import (
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.PROJECT_VERSION,
-    description="A robust Todo API built with FastAPI and clean architecture."
+    description="A robust Todo API built with FastAPI and clean architecture.",
+    debug=settings.DEBUG_MODE
 )
 
 app.add_middleware(
