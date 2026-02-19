@@ -62,7 +62,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # --- CLEAN SHUTDOWN ---
+    # --- SHUTDOWN ---
     if redis:
         await redis.close()
 
