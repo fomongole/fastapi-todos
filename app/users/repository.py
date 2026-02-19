@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
 from app.users import models, schemas
 
-def get_user_by_email(db: Session, email: str):
+def get_user_by_email(db: Session, email: str) -> models.User | None:
     return db.query(models.User).filter(models.User.email == email).first()
 
-def get_user_by_id(db: Session, user_id: int):
+def get_user_by_id(db: Session, user_id: int) -> models.User | None:
     return db.query(models.User).filter(models.User.id == user_id).first()
 
-def create_user(db: Session, user: schemas.UserCreate, hashed_password: str):
+def create_user(db: Session, user: schemas.UserCreate, hashed_password: str) -> models.User:
     db_user = models.User(email=user.email, hashed_password=hashed_password)
     
     db.add(db_user)

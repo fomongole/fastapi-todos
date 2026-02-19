@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -10,6 +10,7 @@ from app.users.models import User
 
 from fastapi_cache.decorator import cache
 from fastapi_cache import FastAPICache
+from app.core.cache import custom_key_builder
 
 router = APIRouter(
     prefix="/todos",
@@ -26,8 +27,9 @@ async def create_todo(
     return service.create_todo(db=db, todo=todo, owner_id=current_user.id)
 
 @router.get("/", response_model=schemas.PaginatedTodoResponse)
-@cache(expire=60, namespace="todos") # Cache for 1 minute
+@cache(expire=60, namespace="todos", key_builder=custom_key_builder) # Cache for 1 minute
 async def read_todos(
+    request: Request,
     page: int = 1, 
     size: int = 10,
     completed: Optional[bool] = None,

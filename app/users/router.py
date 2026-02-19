@@ -1,11 +1,11 @@
-from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+
 from app.database.session import get_db
-from app.users import schemas, service
+from app.users import schemas, service, models
+from app.users.dependencies import get_current_user
 from app.core import security
-from app.core.config import settings
 
 router = APIRouter(
     prefix="/users",
@@ -31,9 +31,49 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
+    access_token = security.create_access_token(data={"sub": user.email})
+    refresh_token = security.create_refresh_token(data={"sub": user.email})
     
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token, 
+        "refresh_token": refresh_token, 
+        "token_type": "bearer"
+    }
+
+@router.post("/refresh", response_model=schemas.Token)
+async def refresh_token(
+    token_data: schemas.TokenRefresh, 
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    redis_client = request.app.state.redis
+    return await service.refresh_user_token(
+        db=db, 
+        refresh_token=token_data.refresh_token, 
+        redis_client=redis_client
+    )
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(
+    logout_data: schemas.LogoutRequest, 
+    request: Request, 
+    current_user: models.User = Depends(get_current_user)
+):
+    # 1. Extract access token from the request header
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Invalid authorization header"
+        )
+    access_token = auth_header.split(" ")[1]
+
+    # 2. Add both tokens to the Redis denylist
+    redis_client = request.app.state.redis
+    await service.denylist_tokens(
+        access_token=access_token, 
+        refresh_token=logout_data.refresh_token, 
+        redis_client=redis_client
+    )
+
+    return {"message": "Successfully logged out!"}

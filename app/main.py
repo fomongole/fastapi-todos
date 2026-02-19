@@ -5,6 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -36,12 +37,23 @@ async def lifespan(app: FastAPI):
     # --- CACHE INIT ---
     if settings.TESTING:
         FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
+        app.state.redis = None
     else:
         redis = aioredis.from_url(
             settings.REDIS_URL,
             encoding="utf8",
             decode_responses=True,
         )
+        # Verify connection on startup
+        try:
+            logger.info("Connecting to Redis/Upstash...")
+            await redis.ping()
+            logger.info("Successfully connected to Redis/Upstash!")
+        except Exception as e:
+            logger.error(f"Failed to connect to Redis at {settings.REDIS_URL}: {e}")
+
+        # Attach raw redis to app state for denylist operations
+        app.state.redis = redis
         FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 
     yield

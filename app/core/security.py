@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 import jwt
+import uuid
 
 from app.core.config import settings
 
@@ -21,8 +22,32 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         
-    # Add the expiration to the JWT payload
-    to_encode.update({"exp": expire})
+    # Add the expiration to the JWT payload, enforce token type, and add unique JTI
+    to_encode.update({
+        "exp": expire, 
+        "type": "access",
+        "jti": str(uuid.uuid4())
+    })
+    
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    
+    return encoded_jwt
+
+def create_refresh_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    to_encode = data.copy()
+    
+    # Calculate the expiration time for refresh token
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        
+    # Enforce token type to prevent misuse, and add unique JTI which will be stored in redis blacklist for revocation
+    to_encode.update({
+        "exp": expire, 
+        "type": "refresh",
+        "jti": str(uuid.uuid4())
+    })
     
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     
